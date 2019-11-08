@@ -36,7 +36,7 @@ void Lineanim::setup(vector <vector<glm::vec3>> ivectorlist) {
 
     outline = true;
 
-
+    pct = 0;
 
 }
 
@@ -118,6 +118,48 @@ void Lineanim::draw(){
        }
     }
 
+    if(linemode == 3) {
+        for (int p = 0; p < pathstack.size() ; p++){
+
+           ofPath temppath = pathstack[p];
+           glm::vec3 original_center = pathstack[p].getOutline().back().getBoundingBox().getCenter();
+
+           // draw fullscale path
+           if(outline) temppath.draw();
+           temppath.setFilled(true);
+           ScaletonMesh(temppath, original_center);
+
+
+       }
+    }
+
+    if(linemode == 4) {
+        for (int p = 0; p < pathstack.size() ; p++){
+
+           ofPath temppath = pathstack[p];
+           glm::vec3 original_center = pathstack[p].getOutline().back().getBoundingBox().getCenter();
+
+           // draw fullscale path
+           if(outline) temppath.draw();
+           temppath.setFilled(false);
+           ofPolyline temppoly = temppath.getOutline().back();
+           ConnectAnim(temppoly);
+       }
+    }
+
+    if(linemode == 5) {
+        for (int p = 0; p < pathstack.size() ; p++){
+
+           ofPath temppath = pathstack[p];
+
+           // draw fullscale path
+           //if(outline) temppath.draw();
+           temppath.setFilled(false);
+           ofPolyline temppoly = temppath.getOutline().back().getResampledBySpacing(1);
+           LineAnim(temppoly);
+       }
+    }
+
 
 
 }
@@ -133,6 +175,13 @@ void Lineanim::keyPressed(int key){
         linemode = 1;
     } else if(key == '2') {
         linemode = 2;
+    } else if(key == '3') {
+        linemode = 3;
+    } else if(key == '4') {
+        linemode = 4;
+    } else if(key == '5') {
+        linemode = 5;
+        cout << "pathstack.size: " <<  pathstack.size() << " " << endl;
     }
 
 }
@@ -258,8 +307,8 @@ void Lineanim::ScaletonFatLines(ofxFatLine temppath, glm::vec3 original_center) 
 
             ofPushMatrix();
 
-            float scale =  ofMap(sin(ofGetElapsedTimef()), -1, 1, 0, 1);
-            //float scale =  fmod(ofGetElapsedTimef(),1);
+            //float scale =  ofMap(sin(ofGetElapsedTimef()), -1, 1, 0, 1);
+            float scale =  fmod(ofGetElapsedTimef(),1);
 
 
 
@@ -296,5 +345,82 @@ void Lineanim::ScaletonFatLines(ofxFatLine temppath, glm::vec3 original_center) 
 
 
     }
+}
+
+void Lineanim::ScaletonMesh(ofPath temppath, glm::vec3 original_center) {
+    ofVboMesh vboMesh = temppath.getTessellation();
+    vboMesh.setupIndicesAuto();
+    vboMesh.setMode(OF_PRIMITIVE_LINE_LOOP);
+    for (int i = 0; i <= 10 ; i++){
+
+        vboMesh.draw();
+
+    }
+}
+
+void Lineanim::ConnectAnim(ofPolyline temppoly){
+    for (float i = 0; i < temppoly.getVertices().size();){
+            i = i + 0.05f;
+            glm::vec3 temppoint_front = temppoly.getPointAtIndexInterpolated(i);
+            glm::vec3 temppoint_back = temppoly.getPointAtIndexInterpolated(ofMap(ofGetElapsedTimef()/2, 0, 1, i-3, i*TWO_PI));
+            //ofDrawCircle(temppoint, 10);
+            ofPolyline partline;
+            partline.addVertex(temppoint_back);
+            partline.lineTo(temppoint_front);
+            partline.draw();
+    }
+}
+
+void Lineanim::LineAnim(ofPolyline temppoly){
+    ofPolyline lineanimpoly;
+     ofSetLineWidth(50);
+
+    pct += 0.0002f;		// increase by a certain amount
+    if (pct > 1) {
+        pct = 0;	// just between 0 and 1 (0% and 100%)
+    }
+
+    int linesize = (temppoly.size()/8);
+    //int linesize = 200;
+
+    int pointer = ofMap(pct, 0, 1, 0, temppoly.size());
+
+    //lineanimpoly.addVertex(temppoly.getVertices()[pointer]);
+
+    int length;
+    int overflow = 0;
+
+    for (int i = 0; i <= linesize ;i++){
+
+            length = pointer+i;
+
+            if(length == 0) cout << "temppolysize : " << temppoly.size()  << endl;
+
+            if( length < temppoly.size()) {
+                lineanimpoly.addVertex(temppoly.getVertices()[length]);
+            } else {
+                //cout << "length: "  << length  << endl;
+                //cout << "pointer: " << pointer  << endl;
+
+                //lineanimpoly.addVertex(temppoly.getVertices()[pointer]);
+                overflow = (length - temppoly.size());
+            }
+
+
+
+    }
+
+    if(overflow > 0) {
+        for (int i = 0; i <= overflow ;i++){
+            //if( i== 0 )cout << "overflow:" << endl;
+            lineanimpoly.addVertex(temppoly.getVertices()[i]);
+        }
+    }
+
+    lineanimpoly.draw();
+
+    //cout << "pointer: " << pointer << endl;
+
+
 }
 

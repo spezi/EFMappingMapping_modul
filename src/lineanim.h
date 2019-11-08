@@ -16,11 +16,16 @@ class Lineanim
 
         ofMatrix4x4 matrix;
 
+
     private:
         void Pathinator(vector<glm::vec3> vertices, int index, bool draw);
         void PathinatorFine(vector<glm::vec3> vertices, int index);
         void Scaleton(ofPath temppath, glm::vec3 original_center);
         void ScaletonFatLines(ofxFatLine temppath, glm::vec3 original_center);
+        void ScaletonMesh(ofPath temppath, glm::vec3 original_center);
+        void ConnectAnim(ofPolyline temppoly);
+        void LineAnim(ofPolyline temppoly);
+
 
     public:
         Lineanim();
@@ -36,6 +41,8 @@ class Lineanim
         ofShader shader;
         ofMesh tessellation;
         ofVbo vbo;
+        float pct;
+
 
 
         void FatLineinator(vector<glm::vec3> vertices);
