@@ -3,6 +3,25 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     mapping.setup();
+    //lineanim.setup(vectorslist);
+
+    svg.load("test.svg");
+    cout << "svg size" << svg.getPaths().size() << endl;
+
+    if(svg.getPaths().size() > 0) {
+        for (ofPath p: svg.getPaths()){
+            // svg defaults to non zero winding which doesn't look so good as contours
+            p.setPolyWindingMode(OF_POLY_WINDING_ODD);
+            const vector<ofPolyline>& lines = p.getOutline();
+
+            for(const ofPolyline & line: lines){
+                vectorslist.push_back(line.getVertices());
+                cout << "vectorslist svg size" << vectorslist.size() << endl;
+            }
+            vectorslist.pop_back();
+            lineanim.setup(vectorslist);
+        }
+    }
 
     ofSetVerticalSync(false);
     ofBackground(0);

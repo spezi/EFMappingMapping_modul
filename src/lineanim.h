@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxFatLine.h"
 
+
 class Lineanim
 {
     private:
@@ -11,6 +12,8 @@ class Lineanim
         ofPath path;
         vector <ofPath> pathstack;
         vector <ofxFatLine> fatLinestack;
+
+
 
         int linemode;
 
@@ -25,6 +28,7 @@ class Lineanim
         void ScaletonMesh(ofPath temppath, glm::vec3 original_center);
         void ConnectAnim(ofPolyline temppoly);
         void LineAnim(ofPolyline temppoly);
+        void RandomConnector(ofPolyline temppoly);
 
 
     public:
@@ -42,6 +46,7 @@ class Lineanim
         ofMesh tessellation;
         ofVbo vbo;
         float pct;
+        float pct2;
 
 
 

@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "mapping.h"
 #include "lineanim.h"
-
+#include "ofxSvg.h"
 
 class ofApp : public ofBaseApp{
 
@@ -34,6 +34,7 @@ public:
     Mapping mapping;
     Lineanim lineanim;
 
+    ofxSVG svg;
     ofPath outline;
     ofMesh mesh;
 

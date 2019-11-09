@@ -21,7 +21,12 @@ void Lineanim::setup(vector <vector<glm::vec3>> ivectorlist) {
 
     lines =false;
 
+
+
+
     if(gotvertices) {
+        pathstack.clear();
+        fatLinestack.clear();
         for (int i = 0; i < vectorslist.size(); i++){
             Pathinator(vectorslist[i], i, false);
             FatLineinator(vectorslist[i]);
@@ -37,6 +42,9 @@ void Lineanim::setup(vector <vector<glm::vec3>> ivectorlist) {
     outline = true;
 
     pct = 0;
+    pct2 = 0;
+
+
 
 }
 
@@ -49,6 +57,8 @@ void Lineanim::update(){
 
 
 void Lineanim::draw(){
+
+
 
 
      //ofPushMatrix();
@@ -160,6 +170,20 @@ void Lineanim::draw(){
        }
     }
 
+    if(linemode == 6) {
+        for (int p = 0; p < pathstack.size() ; p++){
+
+           ofPath temppath = pathstack[p];
+           glm::vec3 original_center = pathstack[p].getOutline().back().getBoundingBox().getCenter();
+
+           // draw fullscale path
+           //if(outline) temppath.draw();
+           temppath.setFilled(false);
+           ofPolyline temppoly = temppath.getOutline().back();
+           RandomConnector(temppoly);
+       }
+    }
+
 
 
 }
@@ -182,6 +206,8 @@ void Lineanim::keyPressed(int key){
     } else if(key == '5') {
         linemode = 5;
         cout << "pathstack.size: " <<  pathstack.size() << " " << endl;
+    }  else if(key == '6') {
+        linemode = 6;
     }
 
 }
@@ -359,6 +385,7 @@ void Lineanim::ScaletonMesh(ofPath temppath, glm::vec3 original_center) {
 }
 
 void Lineanim::ConnectAnim(ofPolyline temppoly){
+    ofSetLineWidth(1);
     for (float i = 0; i < temppoly.getVertices().size();){
             i = i + 0.05f;
             glm::vec3 temppoint_front = temppoly.getPointAtIndexInterpolated(i);
@@ -373,14 +400,14 @@ void Lineanim::ConnectAnim(ofPolyline temppoly){
 
 void Lineanim::LineAnim(ofPolyline temppoly){
     ofPolyline lineanimpoly;
-     ofSetLineWidth(50);
+
 
     pct += 0.0002f;		// increase by a certain amount
     if (pct > 1) {
         pct = 0;	// just between 0 and 1 (0% and 100%)
     }
 
-    int linesize = (temppoly.size()/8);
+    int linesize = (temppoly.size()/2);
     //int linesize = 200;
 
     int pointer = ofMap(pct, 0, 1, 0, temppoly.size());
@@ -394,7 +421,7 @@ void Lineanim::LineAnim(ofPolyline temppoly){
 
             length = pointer+i;
 
-            if(length == 0) cout << "temppolysize : " << temppoly.size()  << endl;
+            //if(length == 0) cout << "temppolysize : " << temppoly.size()  << endl;
 
             if( length < temppoly.size()) {
                 lineanimpoly.addVertex(temppoly.getVertices()[length]);
@@ -417,10 +444,59 @@ void Lineanim::LineAnim(ofPolyline temppoly){
         }
     }
 
-    lineanimpoly.draw();
+        //
+    ofVboMesh tempmesh;
+    float width = 5;
+    ofSetLineWidth(width);
+    tempmesh.addVertices(lineanimpoly.getSmoothed(5).getVertices());
+    tempmesh.setupIndicesAuto();
+    tempmesh.setMode(OF_PRIMITIVE_LINE_STRIP);
+        //temppath.setGlobalWidth(10);
+        //temppath.setFromPolyline(lineanimpoly);
+    glm::vec3 front = tempmesh.getVerticesPointer()[0];
+    glm::vec3 back = tempmesh.getVerticesPointer()[tempmesh.getVertices().size()-1];
+
+    tempmesh.draw();
+    ofSetLineWidth(1);
+    ofFill();
+    ofDrawCircle(front, width/2);
+    ofDrawCircle(back, width/2);
+
+    //ofPolyline FatLinePoly;
+    //ofxFatLine temppath;
+    //temppath.setGlobalWidth(10);
+    //temppath.setFromPolyline(FatLinePoly);
+    //temppath.draw();
+
+    //void strokePolyline(const ofPolyline& line, const ofColor& c, float width=1);
+    //ofxNanoVG::strokePolyline(lineanimpoly, ofColor(255,255,255), 10);
+
+    //ofxNanoVG().strokePolyline(lineanimpoly, 10);
+    //ofxNanoVG().setup(true, true);
+
+
+
+    //lineanimpoly.draw();
 
     //cout << "pointer: " << pointer << endl;
 
+
+}
+
+void Lineanim::RandomConnector(ofPolyline temppoly){
+    ofSetLineWidth(3);
+
+        pct2 += 0.00002f;		// increase by a certain amount
+        if (pct2 > 1) {
+            pct2 = 0;	// just between 0 and 1 (0% and 100%)
+        }
+            glm::vec3 temppoint_first = temppoly.getPointAtIndexInterpolated(ofMap((pct2/ofRandomuf()), 0, 1, 0, temppoly.size()));
+            glm::vec3 temppoint_sec = temppoly.getPointAtIndexInterpolated(ofMap((pct2/ofRandomuf()), 0, 1, 0, temppoly.size()));
+            //ofDrawCircle(temppoint, 10);
+            ofPolyline partline;
+            partline.addVertex(temppoint_first);
+            partline.addVertex(temppoint_sec);
+            partline.draw();
 
 }
 
