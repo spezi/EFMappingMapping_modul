@@ -12,8 +12,11 @@ class Lineanim
         ofPath path;
         vector <ofPath> pathstack;
         vector <ofxFatLine> fatLinestack;
+        vector<ofPolyline> outlines;
 
-
+        list<int> togrow;
+        list<int> growed;
+        bool init;
 
         int linemode;
 
@@ -29,7 +32,8 @@ class Lineanim
         void ConnectAnim(ofPolyline temppoly);
         void LineAnim(ofPolyline temppoly);
         void RandomConnector(ofPolyline temppoly);
-
+        void Grow();
+        void GrowSuccessive();
 
     public:
         Lineanim();
@@ -47,7 +51,7 @@ class Lineanim
         ofVbo vbo;
         float pct;
         float pct2;
-
+        float step;
 
 
         void FatLineinator(vector<glm::vec3> vertices);

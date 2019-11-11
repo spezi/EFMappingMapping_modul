@@ -44,7 +44,7 @@ void Lineanim::setup(vector <vector<glm::vec3>> ivectorlist) {
     pct = 0;
     pct2 = 0;
 
-
+    init = true;
 
 }
 
@@ -59,7 +59,10 @@ void Lineanim::update(){
 void Lineanim::draw(){
 
 
-
+    step += 0.001;
+    if (step > 1) {
+        step -= 1;
+    }
 
      //ofPushMatrix();
      //ofRotateZ(ofGetElapsedTimef());
@@ -184,6 +187,41 @@ void Lineanim::draw(){
        }
     }
 
+    if(linemode == 7) {
+        outlines.clear();
+        for (ofPath p: pathstack){
+            // svg defaults to non zero winding which doesn't look so good as contours
+            p.setPolyWindingMode(OF_POLY_WINDING_ODD);
+            const vector<ofPolyline>& lines = p.getOutline();
+            for(const ofPolyline & line: lines){
+                outlines.push_back(line.getResampledBySpacing(1));
+            }
+        }
+        Grow();
+    }
+
+    if(linemode == 8) {
+        outlines.clear();
+        for (ofPath p: pathstack){
+            // svg defaults to non zero winding which doesn't look so good as contours
+            p.setPolyWindingMode(OF_POLY_WINDING_ODD);
+            const vector<ofPolyline>& lines = p.getOutline();
+            for(const ofPolyline & line: lines){
+                outlines.push_back(line.getResampledBySpacing(1));
+            }
+        }
+
+        if(init) {
+            for (int i = 0; i <= outlines.size() ;i++){
+                togrow.push_back(i);
+            }
+            togrow.reverse();
+            init = false;
+        }
+
+        GrowSuccessive();
+    }
+
 
 
 }
@@ -208,6 +246,10 @@ void Lineanim::keyPressed(int key){
         cout << "pathstack.size: " <<  pathstack.size() << " " << endl;
     }  else if(key == '6') {
         linemode = 6;
+    }  else if(key == '7') {
+        linemode = 7;
+    }   else if(key == '8') {
+        linemode = 8;
     }
 
 }
@@ -499,4 +541,63 @@ void Lineanim::RandomConnector(ofPolyline temppoly){
             partline.draw();
 
 }
+
+void Lineanim::Grow(){
+    for (ofPolyline & line: outlines){
+        int num = step * line.size();
+        ofPolyline partline;
+        for (int j = 0; j < num; j++){
+            partline.addVertex(line[j]);
+        }
+        partline.draw();
+    }
+}
+
+void Lineanim::GrowSuccessive(){
+
+    cout << "growed: " <<  growed.size() << endl;
+    cout << "togrow: " <<  togrow.size() << endl;
+
+        for (int & paint: growed){
+                cout << " paint " << paint << endl;
+                ofPolyline partline_growed;
+            for (int i = 0; i < outlines[paint].size(); i++){
+                partline_growed.addVertex(outlines[paint][i]);
+            }
+                partline_growed.draw();
+        }
+
+        cout << "pass1: " << endl;
+
+        if(togrow.size() > 0) {
+            cout << "pass2: " << endl;
+            int num = step * outlines[togrow.back()].size();
+            ofPolyline partline;
+            for (int j = 0; j < num; j++){
+                partline.addVertex(outlines[togrow.back()][j]);
+            }
+            if(num > (outlines[togrow.back()].size()-2)) {
+                growed.push_back(togrow.back());
+                togrow.pop_back();
+            } else {
+                //init = true;
+            }
+            partline.draw();
+        }
+
+
+
+    //for (int i = 0; i <= outlines[0].size() ;i++){
+    //    int num = step * outlines[0].size();
+    //    ofPolyline partline;
+    //    for (int j = 0; j < num; j++){
+    //        partline.addVertex(outlines[i][j]);
+    //
+    //    }
+    //    partline.draw();
+    //}
+}
+
+
+
 
